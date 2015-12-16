@@ -221,15 +221,15 @@ namespace WinFormDemo
 
 
 
-            SqlParameter pa = new SqlParameter();
-            pa.Direction = ParameterDirection.Output;
-            pa.ParameterName = "@param";
-            pa.Size = 11;
-            SqlParameter[] param = { new SqlParameter("@title", "sdddddddddd1"), new SqlParameter("@content", "sdddddddddd"), pa };
+            //SqlParameter pa = new SqlParameter();
+            //pa.Direction = ParameterDirection.Output;
+            //pa.ParameterName = "@param";
+            //pa.Size = 11;
+            //SqlParameter[] param = { new SqlParameter("@title", "sdddddddddd1"), new SqlParameter("@content", "sdddddddddd"), pa };
 
-            SqlHelper.ExecuteDataSetProducts("pro_addArticle", param);
+            //SqlHelper.ExecuteDataSetProducts("pro_addArticle", param);
 
-            MessageBox.Show(param[2].Value.ToString());
+            //MessageBox.Show(param[2].Value.ToString());
         }
 
         private void setElementValueToolStripMenuItem1_Click(object sender, EventArgs e)
@@ -432,6 +432,8 @@ namespace WinFormDemo
                   }
             }
 
+
+
             #region
 
             Article article = listArticle[0];
@@ -516,53 +518,6 @@ namespace WinFormDemo
             #endregion
 
 
-
-            //try
-            //{
-
-            //    List<CwbElement> imgs = chromeWebBrowser1.Document.GetElementsByTagName("IMG");
-
-            //    foreach (CwbElement elem in imgs)
-            //    {
-            //        if (elem.GetAttribute("class") == "")
-            //        {
-            //            string src = elem.GetAttribute("src");
-            //            string id = elem.GetAttribute("id");
-
-            //            CwbElement parent = chromeWebBrowser1.Document.GetElementById("pic_" + id);
-            //            if (parent != null)
-            //            {
-            //                //string[] objet = new string[] { src, path, GenerateNonceStr() + ".jpg" };
-            //                //Thread thread = new Thread(DownImage);
-
-            //                //thread.Start(objet);  
-
-
-            //                // DownImage(objet);
-            //                chromeWebBrowser1.Document.GetElementById("pic_" + id).InnerHtml = "<!--{img:0}-->";
-            //            }
-
-            //        }
-
-            //    }
-            //    //return;
-
-
-            //    urls.RemoveAt(0);
-
-            //    Log.Info(this.GetType().ToString(), chromeWebBrowser1.Title + "");
-
-            //    if (urls.Count > 0)
-            //    {
-            //        chromeWebBrowser1.OpenUrl(urls[0]);
-            //    }
-            //    else
-            //        timer1.Start();
-            //}
-            //catch (Exception ex)
-            //{
-            //    Log.Error(this.GetType().ToString(), ex.Message + "   2行");
-            //}
         }
 
         //在网站根目录下创建日志目录
