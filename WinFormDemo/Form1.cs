@@ -365,7 +365,8 @@ namespace WinFormDemo
                             aitem.Dislike = articles[i][44].ToString();
                             aitem.ViewCount = articles[i][45].ToString();
                             aitem.Tags = Regex.Unescape(articles[i][11].ToJson()).Replace("[", "").Replace("]", "").Replace(",", "  ").Replace("\"", " ");
-                            aitem.Category = articles[i][55].ToString();
+                            string[] str = Regex.Unescape(articles[i][12].ToJson()).Replace("[", "").Replace("]", "").Replace("\"", "").Split(',');
+                            aitem.Category = str==null?"": str[0];
                             index++;
                             //ListViewItem lv = new ListViewItem();
                             //lv.Text = index.ToString();
@@ -425,8 +426,9 @@ namespace WinFormDemo
             int index = 0;
             foreach (CwbElement elem in DIVS)
             {
-                  if (elem.GetAttribute("class") == "img finish")
+                  if (elem.GetAttribute("class") == "img loadImg" || elem.GetAttribute("class") == "img finish")   //img loadImg      img finish
                   {
+                      elem.SetAttribute("style", "");
                       elem.InnerHtml = "<!--{img:"+index+"}-->";
                       index++;
                   }
@@ -448,17 +450,22 @@ namespace WinFormDemo
                     article.Thumbnail=GenerateNonceStr() + ".jpg";
                 }
 
-                if (article.Category.Equals(""))
+
+                if (article.Category!="")
                 {
-                    article.Category = "1";
-                }
-                else if (categoryList.ContainsKey(article.Category))
-                {
-                    article.Category = categoryList[article.Category];
+                    if (categoryList.ContainsKey(article.Category))
+                    {
+                        article.Category = categoryList[article.Category];
+                    }
+                    else
+                    {
+                        Log.Info("", "发现新的Category------------------------------" + article.Category);
+                        article.Category = "1";
+                    }
+
                 }
                 else
                 {
-                    Log.Info("", "发现新的Category------------------------------" + article.Category);
                     article.Category = "1";
                 }
 
@@ -486,7 +493,7 @@ namespace WinFormDemo
 
                     for (int i = 0; i < article.Images.Count; i++)
                     {
-                        sql += "(" + result + ",'" + article.Images[i].FileName + "','" + article.Images[i].Desc + "'," + article.Images[i].Sort + ",'www.zhangjixi.com'),";
+                        sql += "(" + result + ",'" + article.Images[i].FileName + "','"+img_path+ "','"+ article.Images[i].Desc + "'," + article.Images[i].Sort + ",'www.zhangjixi.com'),";
                         StopTimeHandler stop = new StopTimeHandler(DownImage);
                         AsyncCallback callback = new AsyncCallback(onDownLoadFinish);
                         IAsyncResult asyncResult = stop.BeginInvoke(article.Images[i], callback, "--下载完成 \r\n");
@@ -520,8 +527,13 @@ namespace WinFormDemo
 
         }
 
+        //图片目录
+        public static string img_path = DateTime.Now.ToString("yyyyMMdd");
+
         //在网站根目录下创建日志目录
-        public static string path = "E:\\images\\";
+        public static string path = "E:\\img_web\\images\\";
+
+     
 
         /// <summary>
         /// 下载图片

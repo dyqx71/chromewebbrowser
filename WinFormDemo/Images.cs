@@ -37,5 +37,7 @@ namespace WinFormDemo
             get { return sort; }
             set { sort = value; }
         }
+
+        
     }
 }
