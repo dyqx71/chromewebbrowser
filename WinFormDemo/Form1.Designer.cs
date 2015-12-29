@@ -71,11 +71,11 @@
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chromeWebBrowser1 = new Sashulin.ChromeWebBrowser();
             this.button1 = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.timer2 = new System.Windows.Forms.Timer(this.components);
-            this.chromeWebBrowser1 = new Sashulin.ChromeWebBrowser();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -415,6 +415,18 @@
             // 
             this.columnHeader4.Text = "类别";
             // 
+            // chromeWebBrowser1
+            // 
+            this.chromeWebBrowser1.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.chromeWebBrowser1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.chromeWebBrowser1.Location = new System.Drawing.Point(3, 3);
+            this.chromeWebBrowser1.Name = "chromeWebBrowser1";
+            this.chromeWebBrowser1.Size = new System.Drawing.Size(591, 285);
+            this.chromeWebBrowser1.TabIndex = 0;
+            this.chromeWebBrowser1.BrowserDocumentCompleted += new System.EventHandler(this.chromeWebBrowser1_BrowserDocumentCompleted);
+            this.chromeWebBrowser1.BrowserUrlChange += new Sashulin.UrlChangeEventHandler(this.chromeWebBrowser1_BrowserUrlChange);
+            this.chromeWebBrowser1.BrowserNewWindow += new Sashulin.NewWindowEventHandler(this.chromeWebBrowser1_BrowserNewWindow);
+            // 
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -438,24 +450,12 @@
             // 
             // timer1
             // 
-            this.timer1.Interval = 1000;
+            this.timer1.Interval = 10000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // timer2
             // 
             this.timer2.Tick += new System.EventHandler(this.timer2_Tick);
-            // 
-            // chromeWebBrowser1
-            // 
-            this.chromeWebBrowser1.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.chromeWebBrowser1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.chromeWebBrowser1.Location = new System.Drawing.Point(3, 3);
-            this.chromeWebBrowser1.Name = "chromeWebBrowser1";
-            this.chromeWebBrowser1.Size = new System.Drawing.Size(591, 285);
-            this.chromeWebBrowser1.TabIndex = 0;
-            this.chromeWebBrowser1.BrowserDocumentCompleted += new System.EventHandler(this.chromeWebBrowser1_BrowserDocumentCompleted);
-            this.chromeWebBrowser1.BrowserUrlChange += new Sashulin.UrlChangeEventHandler(this.chromeWebBrowser1_BrowserUrlChange);
-            this.chromeWebBrowser1.BrowserNewWindow += new Sashulin.NewWindowEventHandler(this.chromeWebBrowser1_BrowserNewWindow);
             // 
             // Form1
             // 
