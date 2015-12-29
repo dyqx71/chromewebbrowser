@@ -16,6 +16,9 @@ using System.Net;
 using System.Runtime.Remoting.Messaging;
 using System.Data.SqlClient;
 using System.Text.RegularExpressions;
+using MySql.Data.MySqlClient;
+using System.Drawing.Imaging;
+using System.Collections;
 
 namespace WinFormDemo
 {
@@ -37,8 +40,7 @@ namespace WinFormDemo
             //string s = chromeWebBrowser1.GetElementValueById("kw1");
             //MessageBox.Show(s);
 
-            flag = true;
-            timer1.Start();
+           
         }
 
         private void deleteAllCookieToolStripMenuItem_Click(object sender, EventArgs e)
@@ -67,6 +69,18 @@ namespace WinFormDemo
         }
 
         Dictionary<String, String> categoryList = new Dictionary<String, String>();
+
+
+
+
+
+        //在网站根目录下创建日志目录   @"C:\Inetpub\wwwroot\images\";           @"C:\images\";
+        public static string path = @"C:\Inetpub\wwwroot\images\"; 
+
+        //图片目录
+        public static string img_path = DateTime.Now.ToString("yyyyMMdd");
+
+
         
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -77,14 +91,24 @@ namespace WinFormDemo
             chromeWebBrowser1.Initialize(settings);
 
 
-          
+            System.Net.ServicePointManager.DefaultConnectionLimit = 50;
 
-            DataTable dt = SqlHelper.ExecuteDataSetText("select * from Category", null).Tables[0];
+
+            DataTable dt = Class_mysql_conn.Get_DataTable("select * from tb_Category", Class_mysql_conn.ConnStr, "tb");
             foreach (DataRow dr in dt.Rows)
             {
                 categoryList.Add(dr[1].ToString(), dr[0].ToString());
             }
 
+            this.Text = categoryList.Count.ToString();
+
+            if (!Directory.Exists(path + img_path))
+            {
+                Directory.CreateDirectory(path + img_path);
+            }
+
+            flag = true;
+            timer1.Start();
         }
 
         private void resetScreenSizeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -340,7 +364,7 @@ namespace WinFormDemo
 
                         if (url.Contains("m.uczzd.cn/webapp/webview/article/news.html"))
                         {
-
+                           
                             Article aitem = new Article();
                             aitem.Title = articles[i][2].ToString();
                             aitem.Url = url;
@@ -350,9 +374,13 @@ namespace WinFormDemo
                             {
                                 Images img = new Images();
                                 string src = articles[i][10][j][1].ToString();
-                                img.Url = src.Substring(0, src.IndexOf('?'));
+                                string filename = GetImgName(src);
+                                img.FileName = filename;
+                                img.Url = "http://image.zzd.sm.cn/" + filename;
+                                //img.Url = src.Substring(0, src.IndexOf('?'));
+                                //img.Url = articles[i][10][j][1].ToString();
                                 img.Desc = articles[i][10][j][2].ToString();
-                                img.FileName = GenerateNonceStr() + ".jpg";
+                                //img.FileName = GenerateNonceStr() + ".jpg";
                                 img.Sort = j.ToString();
                                 aitem.Images.Add(img);
 
@@ -365,8 +393,10 @@ namespace WinFormDemo
                             aitem.Dislike = articles[i][44].ToString();
                             aitem.ViewCount = articles[i][45].ToString();
                             aitem.Tags = Regex.Unescape(articles[i][11].ToJson()).Replace("[", "").Replace("]", "").Replace(",", "  ").Replace("\"", " ");
-                            string[] str = Regex.Unescape(articles[i][12].ToJson()).Replace("[", "").Replace("]", "").Replace("\"", "").Split(',');
-                            aitem.Category = str==null?"": str[0];
+                            
+                           // string[] str = Regex.Unescape(articles[i][12].ToJson()).Replace("[", "").Replace("]", "").Replace("\"", "").Split(',');
+                            //aitem.Category = str==null?"": str[0];
+                            aitem.Category = articles[i][12].Count == 0 ? "" : articles[i][12][0].ToString();
                             index++;
                             //ListViewItem lv = new ListViewItem();
                             //lv.Text = index.ToString();
@@ -441,17 +471,17 @@ namespace WinFormDemo
             Article article = listArticle[0];
             try
             {
-      
+
                 article.Content = chromeWebBrowser1.Document.GetElementById("contentShow").InnerHtml;
 
                 string Thumbnail = article.Thumbnail;
                 if (!Thumbnail.Equals(""))
                 {
-                    article.Thumbnail=GenerateNonceStr() + ".jpg";
+                    article.Thumbnail = GenerateTimeStamp() + ".jpg";
                 }
 
 
-                if (article.Category!="")
+                if (article.Category != "")
                 {
                     if (categoryList.ContainsKey(article.Category))
                     {
@@ -469,72 +499,92 @@ namespace WinFormDemo
                     article.Category = "1";
                 }
 
-           
 
-                SqlParameter pa = new SqlParameter();
+
+                //SqlParameter pa = new SqlParameter();
+                //pa.Direction = ParameterDirection.Output;
+                //pa.ParameterName = "@param";
+                //pa.Size = 11;
+                //SqlParameter[] param = { new SqlParameter("@title", article.Title.Replace("'", "")), new SqlParameter("@content", article.Content.Replace("'", "")), pa, new SqlParameter("@articlelike", article.Article_like), new SqlParameter("@dislike", article.Dislike), new SqlParameter("@supLike", article.Like), new SqlParameter("@thumbnail", article.Thumbnail), new SqlParameter("@categoryid", article.Category), new SqlParameter("@keywords", article.Tags) };
+                //SqlHelper.ExecuteDataSetProducts("pro_addArticle", param);
+
+
+                MySqlParameter pa = new MySqlParameter();
                 pa.Direction = ParameterDirection.Output;
-                pa.ParameterName = "@param";
-                pa.Size = 11;
-                SqlParameter[] param = { new SqlParameter("@title", article.Title.Replace("'", "")), new SqlParameter("@content", article.Content.Replace("'", "")), pa, new SqlParameter("@articlelike", article.Article_like), new SqlParameter("@dislike", article.Dislike), new SqlParameter("@supLike", article.Like), new SqlParameter("@thumbnail", article.Thumbnail), new SqlParameter("@categoryid", article.Category), new SqlParameter("@keywords", article.Tags) };
-                SqlHelper.ExecuteDataSetProducts("pro_addArticle", param);
+                pa.ParameterName = "param";
+
+                MySqlParameter[] param = { pa, new MySqlParameter("sp_title", article.Title.Replace("'", "")), new MySqlParameter("body", article.Content.Replace("'", "")), new MySqlParameter("keywords", article.Tags), new MySqlParameter("viewcount", article.ViewCount), new MySqlParameter("articlelike", article.Article_like), new MySqlParameter("dislike", article.Dislike), new MySqlParameter("suplike", article.Like), new MySqlParameter("thumbnail", Thumbnail==""? "": img_path+"/"+article.Thumbnail ), new MySqlParameter("createtime", DateTime.Now.ToString("yyyy-MM-dd HH:MM:ss")), new MySqlParameter("categoryid", article.Category) };
+                Class_mysql_conn.Run_Pro("pro_newarticle", Class_mysql_conn.ConnStr, param);
 
 
-                string result = param[2].Value.ToString();
+
+
+                string result = param[0].Value.ToString();
                 if (result != "exists")
                 {
+
                     if (!Thumbnail.Equals(""))
                     {
                         WebClient wc = new WebClient();
-                        wc.DownloadFile(new Uri(Thumbnail.Substring(0, Thumbnail.IndexOf('?') - 1)), path + article.Thumbnail);
+                        wc.DownloadFile(new Uri(Thumbnail + "&width=250&height=150"), path + img_path+"\\" + article.Thumbnail);
                     }
 
 
-                    string sql = "insert into Article_imgs values ";
+                    string sql = "insert into tb_articleimgs(FilePath,FileName,Description,Sort,ArticleId) values";
 
                     for (int i = 0; i < article.Images.Count; i++)
                     {
-                        sql += "(" + result + ",'" + article.Images[i].FileName + "','"+img_path+ "','"+ article.Images[i].Desc + "'," + article.Images[i].Sort + ",'www.zhangjixi.com'),";
+                        sql += "('" + img_path + "','" + article.Images[i].FileName + "','" + article.Images[i].Desc + "'," + article.Images[i].Sort + "," + result + "),";
                         StopTimeHandler stop = new StopTimeHandler(DownImage);
                         AsyncCallback callback = new AsyncCallback(onDownLoadFinish);
                         IAsyncResult asyncResult = stop.BeginInvoke(article.Images[i], callback, "--下载完成 \r\n");
-                        
+
+                       // Log.Info("", article.Images[i].Url);
                     }
 
-                    if (!sql.Equals("insert into Article_imgs values "))
+                    if (!sql.Equals("insert into tb_articleimgs(FilePath,FileName,Description,Sort,ArticleId) values"))
                     {
                         sql = sql.Substring(0, sql.Length - 1);
-                        SqlHelper.ExecteNonQuery(CommandType.Text, sql, null);
+                        //SqlHelper.ExecteNonQuery(CommandType.Text, sql, null);
+                        Class_mysql_conn.Run_SQL(sql, Class_mysql_conn.ConnStr);
                     }
 
                 }
 
-                listArticle.RemoveAt(0);
-                if (listArticle.Count > 0)
-                {
-                    //webBrowser1.Navigate(listArticle[0].Url);
-                    chromeWebBrowser1.OpenUrl(listArticle[0].Url);
-                }
-                else
-                    timer1.Start();
+
 
             }
             catch (Exception ex)
             {
                 Log.Error("", ex.Message + "3333333333333" + article.ToString());
             }
+            finally
+            {
+                listArticle.RemoveAt(0);
+                if (listArticle.Count > 0)
+                {
+                    chromeWebBrowser1.OpenUrl(listArticle[0].Url);
+                }
+                else
+                    timer1.Start();
+            }
             #endregion
 
 
         }
 
-        //图片目录
-        public static string img_path = DateTime.Now.ToString("yyyyMMdd");
 
-        //在网站根目录下创建日志目录
-        public static string path = "E:\\img_web\\images\\";
 
-     
 
+
+
+
+        public string GetImgName(string src)
+        {
+            return src.Substring(23, src.IndexOf('?') - 23);
+        }
+
+        string temp = "";
         /// <summary>
         /// 下载图片
         /// </summary>
@@ -544,29 +594,89 @@ namespace WinFormDemo
         {
             try
             {
-
+             
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(img.Url);
-                request.Timeout = 2000;
-                request.UserAgent = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.1.4322)"; // 
-                request.AllowAutoRedirect = true;//是否允许302
+                request.Timeout = 6000;
+                request.KeepAlive = false;
+                request.AllowAutoRedirect = false;
+                //request.UserAgent = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.1.4322)"; // 
+                //request.AllowAutoRedirect = true;//是否允许302
                 WebResponse response = request.GetResponse();
-                //文件流获取图片操作
-                Stream reader = response.GetResponseStream();
-                string path_img = path + img.FileName;        //图片路径命名 
-                FileStream writer = new FileStream(path_img, FileMode.OpenOrCreate, FileAccess.Write);
-                byte[] buff = new byte[512];
-                int c = 0;                                           //实际读取的字节数   
-                while ((c = reader.Read(buff, 0, buff.Length)) > 0)
+             
+                //////文件流获取图片操作
+                //Stream reader = response.GetResponseStream();
+                //string path_img = path + img_path + "\\" + img.FileName;        //图片路径命名 
+                //FileStream writer = new FileStream(path_img, FileMode.OpenOrCreate, FileAccess.Write);
+                //byte[] buff = new byte[512];
+                //int c = 0;                                           //实际读取的字节数   
+                //while ((c = reader.Read(buff, 0, buff.Length)) > 0)
+                //{
+                //    writer.Write(buff, 0, c);
+                //}
+                ////释放资源
+                //writer.Close();
+                //writer.Dispose();
+                //reader.Close();
+                //reader.Dispose();
+                //response.Close();
+
+
+
+                using (Stream stream = response.GetResponseStream())
                 {
-                    writer.Write(buff, 0, c);
+
+                    Image image = null;
+                    bool tmp = false;
+                    try
+                    {
+                        image = Image.FromStream(stream);
+                    }
+                    catch (Exception ex)
+                    {
+                        tmp = true;
+                        WebClient wc = new WebClient();
+                        wc.DownloadFile(new Uri(img.Url), path + img_path + "\\" + img.FileName);
+                    }
+                    //string[] tmpUrl = url.Split('.');
+                    //imgfile.Save(string.Concat("", "/", DateTime.Now.ToString("yyyyMMddHHmmssfff"), ".", img.FileName));
+                    //imgfile.Dispose();
+                    //stream.Close();
+
+
+                    if (!tmp)
+                    {
+                        try
+                        {
+
+                            Graphics graphics = Graphics.FromImage(image);
+                            Image waterimg = new Bitmap("C:\\ioc.png");
+                            int x = image.Width - waterimg.Width;
+                            int y = image.Height - waterimg.Height;
+
+                            graphics.DrawImage(waterimg, new Rectangle(int.Parse(x.ToString()), int.Parse(y.ToString()), waterimg.Width, waterimg.Height));
+                            waterimg.Dispose();
+                            graphics.Dispose();
+                        }
+                        catch (Exception ex)
+                        { }
+                        finally
+                        {
+                            image.Save(path + img_path + "\\" + img.FileName, image.RawFormat);
+
+                            image.Dispose();
+                            stream.Close();
+                        }
+                    }
+               
+
+                   
+
                 }
-                //释放资源
-                writer.Close();
-                writer.Dispose();
-                reader.Close();
-                reader.Dispose();
-                response.Close();
+
+
+                    //response.Close();
+              
 
             }
             catch (Exception ex)
@@ -655,6 +765,9 @@ namespace WinFormDemo
             AsyncResult result = (AsyncResult)asyncresult;
             StopTimeHandler del = (StopTimeHandler)result.AsyncDelegate;
 
+            //string data = (string)result.AsyncState;
+            //string name = del.EndInvoke(result);
+
             //listArticle[0].Images.RemoveAt(0);
 
             //if (listArticle[0].Images.Count == 0)
@@ -676,6 +789,17 @@ namespace WinFormDemo
             //_downLoadPicCount++;
             //_downingPicCount--;
             //TipDownLoad();
+        }
+
+
+        /**
+   * 生成时间戳，标准北京时间，时区为东八区，自1970年1月1日 0点0分0秒以来的秒数
+    * @return 时间戳
+   */
+        public static string GenerateTimeStamp()
+        {
+            TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            return Convert.ToInt64(ts.TotalSeconds).ToString();
         }
 
 

@@ -7,6 +7,20 @@ namespace WinFormDemo
 {
    public  class Article
     {
+
+       public Article()
+       {
+           this.title = "";
+           this.content = "";
+           this.thumbnail = "";
+           this.tags = "";
+           this.article_like = "0";
+           this.dislike = "0";
+           this.like = "0";
+           this.viewCount = "0";
+
+       }
+
         private string title;
 
         public string Title

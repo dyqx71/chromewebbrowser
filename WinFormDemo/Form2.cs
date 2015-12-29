@@ -27,6 +27,7 @@ namespace WinFormDemo
         }
         private void button1_Click(object sender, EventArgs e)
         {
+            
             OpenUrl(textBox1.Text);
         }
 

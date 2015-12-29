@@ -29,8 +29,8 @@ namespace WinFormDemo
         */
         public static void Info(string className, string content)
         {
-        
-                WriteLog("INFO", "", content);
+
+            WriteLog("INFO", className, content);
          
         }
 
@@ -41,8 +41,8 @@ namespace WinFormDemo
         */
         public static void Error(string className, string content)
         {
-        
-                WriteLog("ERROR", "", content);
+
+            WriteLog("ERROR", className, content);
           
         }
 
